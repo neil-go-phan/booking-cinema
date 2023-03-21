@@ -1,0 +1,11 @@
+.auth{
+  background-image: url("/assets/background-auth.jpg");
+  &__form {
+    background-color: rgba(120, 120, 120, 0.55);
+    padding: 1rem 1.2rem;
+    -webkit-box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
+    text-shadow: 0.4px 0.4px 5px rgba(0, 0, 0, 0.2);
+  }
+}
