@@ -2,9 +2,7 @@
 
 - Project được viết bằng Go
 - Sử dụng framework Gin, ORM: GORM
-- Frontend project: https://github.com/neil-go-phan/seatmap-frontend
 - Database docker container chạy trên port 2345
-- Migration: [golang-migration](https://github.com/golang-migrate/migrate)
 
 ## HOW TO RUN
 - Yêu cầu:
