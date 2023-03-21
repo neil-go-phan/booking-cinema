@@ -23,7 +23,7 @@ type UserRepository interface {
 	UserWriter
 }
 
-type UserService interface {
+type UserServices interface {
 	GetUser(username string) (*entities.User, error)
 	ListUsers() (user *[]entities.User, err error)
 	CreateUser(userInput *User) (*entities.User, error)

@@ -22,7 +22,7 @@ interface SignUpFormProperty {
   passwordConfirmation?: string;
 }
 
-const Register: NextPage = () => {
+const SignUp: NextPage = () => {
   const router = useRouter()
 
   const [errorMessage, setErrorMessage] = useState({
@@ -33,7 +33,6 @@ const Register: NextPage = () => {
     fullName: yup
       .string()
       .required('Full name must not be empty')
-      .min(8, 'Full name must have 8-50 character')
       .max(50, 'Full name must have 8-50 character')
       .matches(
         _REGEX.REGEX_FULLNAME,
@@ -183,4 +182,4 @@ const Register: NextPage = () => {
   )
 }
 
-export default Register
+export default SignUp

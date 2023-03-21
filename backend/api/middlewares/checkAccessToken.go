@@ -15,14 +15,14 @@ func CheckAccessToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.Request.Header.Get("x-access-token")
 		if tokenString == "" {
-			c.Error(errors.New(helper.ERROR_VALIDATE_TOKEN_FAIL.ErrorName))
+			c.Error(errors.New(helper.ERROR_VALIDATE_TOKEN_FAIL.ErrorName)) //nolint:errcheck
 			c.Abort()
 			return
 		}
 
 		claims, err := validateToken(tokenString)
 		if err != nil {
-			c.Error(errors.New(helper.ERROR_VALIDATE_TOKEN_FAIL.ErrorName))
+			c.Error(errors.New(helper.ERROR_VALIDATE_TOKEN_FAIL.ErrorName)) //nolint:errcheck
 			c.Abort()
 			return
 		}

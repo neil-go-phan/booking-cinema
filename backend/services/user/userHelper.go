@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -85,5 +86,9 @@ func verifyPassword(plain, hash string) (bool, error) {
 
 	hashToCompare := argon2.IDKey([]byte(plain), salt, argon2Const.time, argon2Const.memory, argon2Const.threads, uint32(len(decodedHash)))
 
-	return subtle.ConstantTimeCompare(decodedHash, hashToCompare) == 1, nil
+	isPasswordOk := subtle.ConstantTimeCompare(decodedHash, hashToCompare) == 1
+	if !isPasswordOk {
+		return isPasswordOk, errors.New("password is incorrect")
+	}
+	return isPasswordOk, nil
 }

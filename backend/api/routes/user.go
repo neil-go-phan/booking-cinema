@@ -21,7 +21,7 @@ func NewUserRoutes(userHandler *handler.UserHandler) *UserRoutes{
 func (userRoutes *UserRoutes)Setup(r *gin.Engine) {
 	authRoutes := r.Group("auth")
 	{
-		authRoutes.GET("check-auth", middlewares.CheckAccessToken(), userRoutes.userHandler.CheckAuth)
+		authRoutes.GET("check-login", middlewares.CheckAccessToken(), userRoutes.userHandler.CheckLogin)
 		authRoutes.GET("token", middlewares.ExpiredAccessTokenHandler(), userRoutes.userHandler.Token)
 		authRoutes.GET("users",middlewares.CheckAccessToken(), userRoutes.userHandler.GetUsers)
 		authRoutes.DELETE("delete-user/:username", middlewares.CheckAccessToken(), userRoutes.userHandler.DeleteUser)
