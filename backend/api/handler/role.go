@@ -23,7 +23,7 @@ func NewRoleHandler(handler roleservice.RoleService) *RoleHandler {
 func (roleHandler *RoleHandler) GetRoles(c *gin.Context) {
 	roles, err := roleHandler.handler.ListRole()
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName))
+		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}

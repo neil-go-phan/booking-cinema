@@ -6,7 +6,7 @@ import {
   Button, Col, Container, Form, InputGroup, Row,
 } from 'react-bootstrap'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { setCookie } from 'cookies-next';
@@ -16,6 +16,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import cryptoJS from 'crypto-js';
 import { _REGEX } from '@/constants/regex'
 import { _ROUTES } from '@/constants/route'
+import { IsLoggedContext } from '@/helpers/isLoggedContext'
 interface SignInFormProperty {
   username: string;
   password: string;
@@ -27,6 +28,7 @@ const SignIn: NextPage = () => {
     trigger: false,
     message: '',
   });
+  const logged = useContext(IsLoggedContext)
   const schema = yup.object().shape({
     username: yup
       .string()
@@ -71,7 +73,7 @@ const SignIn: NextPage = () => {
         message: res.data.message,
       });
       router.push(_ROUTES.HOME_PAGE);
-      // logged?.setIsLogged(true)
+      logged?.setIsLogged(true)
     } catch (error: any) {
       setErrorMessage({
         trigger: true,

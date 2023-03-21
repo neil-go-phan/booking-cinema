@@ -4,35 +4,34 @@ import (
 	"booking-cinema-backend/entities"
 	"encoding/base64"
 	"errors"
-	
 )
 
 var SALT_SIZE uint8 = 8 // 8 byte
 
-type userService struct {
+type UserService struct {
 	repo UserRepository
 }
 
 
-func NewUserService(r UserRepository) *userService {
-	return &userService{
+func NewUserService(r UserRepository) *UserService {
+	return &UserService{
 		repo: r,
 	}
 }
 
-func (s *userService) GetUser(username string) (*entities.User, error) {
+func (s *UserService) GetUser(username string) (*entities.User, error) {
 	return s.repo.Get(username)
 }
 
-func (s *userService) ListUsers() (*[]entities.User, error) {
+func (s *UserService) ListUsers() (*[]entities.User, error) {
 	return s.repo.List()
 }
 
-func (s *userService) DeleteUser(username string) (error){
+func (s *UserService) DeleteUser(username string) (error){
 	return s.repo.Delete(username)
 }
 
-func (s *userService) CreateUser(userInput *User) (*entities.User, error) {
+func (s *UserService) CreateUser(userInput *User) (*entities.User, error) {
 	if userInput.Password != userInput.PasswordConfirmation {
 		return nil, errors.New("password confirm is not match")
 	}
@@ -51,7 +50,7 @@ func (s *userService) CreateUser(userInput *User) (*entities.User, error) {
 	return s.repo.Create(entitiesUser)
 }
 
-func (s *userService) VerifyUser(username string, userInput User) (bool, error) {
+func (s *UserService) VerifyUser(username string, userInput User) (bool, error) {
 	if username != userInput.Username {
 		return false, errors.New("username is incorrect")
 	}
@@ -62,6 +61,7 @@ func (s *userService) VerifyUser(username string, userInput User) (bool, error) 
 	if userFromDB.Username == "" {
 		return false, errors.New("username is incorrect")
 	}
+
 	return verifyPassword(userInput.Password, userFromDB.Password)
 }
 

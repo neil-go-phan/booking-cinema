@@ -11,14 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ADMIN_ROLE = "Admin"
+var ADMIN_ROLE = "Super admin"
 
 type UserHandler struct {
-	handler  userservice.UserService
+	handler  userservice.UserServices
 	ESClient *elasticsearch.Client
 }
 
-func NewUserHandler(handler userservice.UserService) *UserHandler {
+func NewUserHandler(handler userservice.UserServices) *UserHandler {
 	userHandler := &UserHandler{
 		handler:  handler,
 		// ESClient: ESClient,
@@ -26,8 +26,8 @@ func NewUserHandler(handler userservice.UserService) *UserHandler {
 	return userHandler
 }
 
-func (userHandler *UserHandler) CheckAuth(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Granted permission"})
+func (userHandler *UserHandler) CheckLogin(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Logged"})
 }
 
 func (userHandler *UserHandler) Token(c *gin.Context) {
@@ -35,7 +35,7 @@ func (userHandler *UserHandler) Token(c *gin.Context) {
 	role, _ := c.Get("role")
 	accessToken, err := generateAccessToken(username.(string), role.(string))
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName))
+		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -45,13 +45,13 @@ func (userHandler *UserHandler) Token(c *gin.Context) {
 func (userHandler *UserHandler) GetUsers(c *gin.Context) {
 	role, _ := c.Get("role")
 	if role != ADMIN_ROLE {
-		c.Error(errors.New(helper.ERROR_NO_PERMISSION.ErrorName))
+		c.Error(errors.New(helper.ERROR_NO_PERMISSION.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	users, err := userHandler.handler.ListUsers()
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName))
+		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -60,18 +60,23 @@ func (userHandler *UserHandler) GetUsers(c *gin.Context) {
 
 func (userHandler *UserHandler) SignIn(c *gin.Context) {
 	var inputUser presenter.User
-	c.BindJSON(&inputUser)
-	err := validateUsernameAndPassword(&inputUser)
+	err := c.BindJSON(&inputUser)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_INPUT_INVALID.ErrorName))
+		c.Error(errors.New(helper.ERROR_WHEN_PARSE_RESPONSE_BODY.ErrorName)) //nolint:errcheck
+		c.Abort()
+		return
+	}
+	err = validateUsernameAndPassword(&inputUser)
+	if err != nil {
+		c.Error(errors.New(helper.ERROR_INPUT_INVALID.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	user := newServicesUser(&inputUser)
 	// verify user
-	_, err = userHandler.handler.VerifyUser(user.Username, *user)
-	if err != nil {
-		c.Error(errors.New(helper.ERROR_SIGNIN_INCORRECT.ErrorName))
+	ok, err := userHandler.handler.VerifyUser(user.Username, *user)
+	if err != nil || !ok {
+		c.Error(errors.New(helper.ERROR_SIGNIN_INCORRECT.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -79,13 +84,13 @@ func (userHandler *UserHandler) SignIn(c *gin.Context) {
 	fullInfoUser, _ := userHandler.handler.GetUser(user.Username)
 	accessToken, err := generateAccessToken(fullInfoUser.Username, fullInfoUser.RoleName)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName))
+		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	refreshToken, err := GenerateRefreshToken(fullInfoUser.Username, fullInfoUser.RoleName)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName))
+		c.Error(errors.New(helper.ERROR_GENERATE_TOKEN_FAIL.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -94,10 +99,15 @@ func (userHandler *UserHandler) SignIn(c *gin.Context) {
 
 func (userHandler *UserHandler) SignUp(c *gin.Context) {
 	var inputUser presenter.User
-	c.BindJSON(&inputUser)
-	err := validateSignUp(&inputUser)
+	err := c.BindJSON(&inputUser)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_INPUT_INVALID.ErrorName))
+		c.Error(errors.New(helper.ERROR_WHEN_PARSE_RESPONSE_BODY.ErrorName)) //nolint:errcheck
+		c.Abort()
+		return
+	}
+	err = validateSignUp(&inputUser)
+	if err != nil {
+		c.Error(errors.New(helper.ERROR_INPUT_INVALID.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -106,18 +116,18 @@ func (userHandler *UserHandler) SignUp(c *gin.Context) {
 
 	checkUser, err := userHandler.handler.GetUser(user.Username)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName))
+		c.Error(errors.New(helper.ERROR_BAD_REQUEST.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	if checkUser.Username != "" {
-		c.Error(errors.New(helper.ERROR_USERNAME_TAKEN.ErrorName))
+		c.Error(errors.New(helper.ERROR_USERNAME_TAKEN.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	_, err = userHandler.handler.CreateUser(user)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_SERVER.ErrorName))
+		c.Error(errors.New(helper.ERROR_SERVER.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
@@ -127,14 +137,14 @@ func (userHandler *UserHandler) SignUp(c *gin.Context) {
 func (userHandler *UserHandler) DeleteUser(c *gin.Context) {
 	role, _ := c.Get("role") 
 	if role != ADMIN_ROLE {
-		c.Error(errors.New(helper.ERROR_NO_PERMISSION.ErrorName))
+		c.Error(errors.New(helper.ERROR_NO_PERMISSION.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}
 	username := c.Param("username")
 	err := userHandler.handler.DeleteUser(username)
 	if err != nil {
-		c.Error(errors.New(helper.ERROR_DELETE_FAIL.ErrorName))
+		c.Error(errors.New(helper.ERROR_DELETE_FAIL.ErrorName)) //nolint:errcheck
 		c.Abort()
 		return
 	}

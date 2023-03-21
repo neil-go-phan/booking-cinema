@@ -4,4 +4,5 @@ type Permission struct {
 	ID        uint
 	PermissionEntities string
 	PermissionMethod string
+	Discription string
 }

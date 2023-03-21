@@ -45,7 +45,7 @@ func validateSignUp(user *presenter.User) error {
 
 func validateFullname(user *presenter.User) error {
 	validate = validator.New()
-	err := validate.Var(user.FullName, "required,min=8,max=50")
+	err := validate.Var(user.FullName, "required,max=50")
 	if err != nil {
 		return err
 	}
